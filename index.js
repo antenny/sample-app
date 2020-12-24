@@ -2,9 +2,12 @@ const path = require('path');
 const fs = require('fs');
 const core = require('@aws-cdk/core');
 const iam = require('@aws-cdk/aws-iam');
+const ssm = require('@aws-cdk/aws-ssm');
+const secretsmanager = require('@aws-cdk/aws-secretsmanager');
 const lambda = require('@aws-cdk/aws-lambda');
 const apigateway = require('@aws-cdk/aws-apigatewayv2');
 const integrations = require('@aws-cdk/aws-apigatewayv2-integrations');
+const antenny = require('antenny-cdk');
 
 class ExampleStack extends core.Stack {
   constructor(scope, id, props) {
@@ -45,9 +48,44 @@ class ExampleStack extends core.Stack {
       methods: [apigateway.HttpMethod.ANY],
       integration: apiFnInteg
     });
+    const secret = secretsmanager.Secret.fromSecretNameV2(
+      this,
+      'Secret',
+      'antennyApiKey'
+    );
+    const sub = new antenny.Subscription(this, 'Sub', {
+      apiKey: secret.secretValue.value,
+      subscription: {
+        name: 'example-subscription',
+        customerId: ssm.StringParameter.valueFromLookup(
+          this,
+          '/antenny/customerId'
+        ),
+        region: this.region,
+        resource: {
+          protocol: 'ws',
+          url: ''
+        },
+        endpoint: {
+          protocol: 'http',
+          url: core.Fn.join('', [
+            api.url,
+            'endpoint'
+          ])
+        }
+      }
+    });
+    new core.CfnOutput(this, 'SubId', {
+      value: sub.attrId
+    });
   }
 }
 
 const app = new core.App();
-new ExampleStack(app, 'ExampleStack');
+new ExampleStack(app, 'ExampleStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT, 
+    region: process.env.CDK_DEFAULT_REGION 
+  }
+});
 app.synth();
