@@ -32,6 +32,48 @@ class ExampleStack extends core.Stack {
         name: 'price'
       }
     });
+    const getFnRole = new iam.Role(this, 'GetFnRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          'service-role/AWSLambdaBasicExecutionRole'
+        )
+      ],
+      inlinePolicies: {
+        dynamodb: new iam.PolicyDocument({
+          statements: [
+            new iam.PolicyStatement({
+              sid: 'dynamodb',
+              effect: iam.Effect.ALLOW,
+              actions: ['dynamodb:Query'],
+              resources: [
+                table.tableArn,
+                core.Fn.join('/', [
+                  table.tableArn,
+                  'index',
+                  'partitionKeyByPriceIdx'
+                ])
+              ]
+            })
+          ]
+        })
+      }
+    });
+    const getFn = new lambda.Function(this, 'GetFn', {
+      role: getFnRole,
+      runtime: lambda.Runtime.NODEJS_12_X,
+      handler: 'index.handler',
+      memorySize: 256,
+      timeout: core.Duration.seconds(30),
+      code: lambda.Code.fromInline(fs.readFileSync(path.join(
+        __dirname,
+        'functions',
+        'get.js'
+      ), { encoding: 'utf8' })),
+      environment: {
+        TABLE_NAME: table.tableName
+      }
+    });
     const postFnRole = new iam.Role(this, 'PostFnRole', {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
@@ -69,8 +111,12 @@ class ExampleStack extends core.Stack {
         'post.js'
       ), { encoding: 'utf8' })),
       environment: {
+        TABLE_NAME: table.tableName,
         ANTENNY_SECRET: custSecret.secretValue.value
       }
+    });
+    const getFnInteg = new integrations.LambdaProxyIntegration({
+      handler: getFn
     });
     const postFnInteg = new integrations.LambdaProxyIntegration({
       handler: postFn
@@ -82,6 +128,11 @@ class ExampleStack extends core.Stack {
         allowOrigins: ['*'],
         maxAge: core.Duration.days(10)
       }
+    });
+    api.addRoutes({
+      path: '/view',
+      methods: [apigateway.HttpMethod.GET],
+      integration: getFnInteg
     });
     api.addRoutes({
       path: '/endpoint',
@@ -115,6 +166,9 @@ class ExampleStack extends core.Stack {
           ])
         }
       }
+    });
+    new core.CfnOutput(this, 'ApiUrl', {
+      value: api.url
     });
     new core.CfnOutput(this, 'SubId', {
       value: sub.attrId

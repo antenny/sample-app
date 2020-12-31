@@ -3,6 +3,7 @@ const AWS = require('aws-sdk');
 const client = new AWS.DynamoDB.DocumentClient({
   region: process.env.AWS_REGION
 });
+const oneMinMs = 1000 * 60;
 const cors = {
   'Access-Control-Allow-Headers': '*',
   'Access-Control-Allow-Origin': '*',
@@ -127,8 +128,7 @@ const getKey = evt => {
   if (isNaN(millis)) {
     return null;
   }
-  const five = 1000 * 60 * 5;
-  const round = Math.floor(millis / five) * five;
+  const round = Math.floor(millis / oneMinMs) * oneMinMs;
   const date = new Date(0);
   date.setUTCMilliseconds(round);
   const inter = date.toISOString();
