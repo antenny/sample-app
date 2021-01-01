@@ -10,7 +10,7 @@ const apigateway = require('@aws-cdk/aws-apigatewayv2');
 const integrations = require('@aws-cdk/aws-apigatewayv2-integrations');
 const antenny = require('antenny-cdk');
 
-class ExampleStack extends core.Stack {
+class SampleStack extends core.Stack {
   constructor(scope, id, props) {
     super(scope, id, props);
     const table = new dynamodb.Table(this, 'Table', {
@@ -177,7 +177,7 @@ class ExampleStack extends core.Stack {
 }
 
 const app = new core.App();
-new ExampleStack(app, 'ExampleStack', {
+new SampleStack(app, 'SampleStack', {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT, 
     region: process.env.CDK_DEFAULT_REGION 
