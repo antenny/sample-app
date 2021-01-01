@@ -10,7 +10,9 @@ const cors = {
 };
 
 exports.handler = async evt => {
-  if (evt.httpMethod !== 'GET') {
+  const ctx = evt.requestContext;
+  const meth = ctx && ctx.http && ctx.http.method;
+  if (meth !== 'GET') {
     return {
       statusCode: 405,
       headers: cors
@@ -83,7 +85,7 @@ const getOpenClose = async (partKey, openClose) => {
       ':sk': 0
     }
   }).promise();
-  const item = resp.Item;
+  const item = resp.Items && resp.Items[0];
   if (!item) {
     return null;
   }
@@ -108,7 +110,7 @@ const getHighLow = async (partKey, highLow) => {
       ':prc': -1
     }
   }).promise();
-  const item = resp.Item;
+  const item = resp.Items && resp.Items[0];
   if (!item) {
     return null;
   }
