@@ -147,7 +147,7 @@ class ExampleStack extends core.Stack {
     const sub = new antenny.Subscription(this, 'Sub', {
       apiKey: apiSecret.secretValue.value,
       subscription: {
-        name: 'test-subscription',
+        name: 'example-subscription',
         customerId: ssm.StringParameter.valueFromLookup(
           this,
           '/antenny/customerId'
