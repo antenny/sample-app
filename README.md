@@ -4,9 +4,7 @@ This is a sample project intended to show how to use antenny. It leverages [aws-
 
 ### Background
 
-The app captures realtime trades from the [gemni exchange](https://www.gemini.com/) via their [public websocket api](https://docs.gemini.com/websocket-api/).
-
-It partitions trades by minute and allows you to view the current minute:
+The app captures realtime trades from the [gemni exchange](https://www.gemini.com/) via their [public websocket api](https://docs.gemini.com/websocket-api/). It partitions trades by minute and allows you to view the current minute:
 
 * opening price
 * high price
@@ -65,7 +63,7 @@ cdk deploy SampleStack
 
 #### Verify
 
-Once deployed, you can go to your cloudformation console and there will be a stack output for `SampleStack` that will have your api url. You can plug this into your browser suffixed with `/view`. You'll be greeted with a json document with the aforementioned data points. Note some may be null. Once the data starts to filter in you can refresh and that data will populate.
+Once deployed, you can go to your cloudformation console and there will be a stack output for `SampleStack` that will have your api url. You can plug this into your browser suffixed with `/view`. You'll be greeted with a json document with the aforementioned data points. Note some may be null. Once the data starts to filter in, you can refresh and that data will populate.
 
 #### 6. Destroy App
 
