@@ -11,8 +11,9 @@ const cors = {
 };
 
 exports.handler = async evt => {
-  console.log(JSON.stringify(evt));
-  if (evt.httpMethod !== 'POST') {
+  const ctx = evt.requestContext;
+  const meth = ctx && ctx.http && ctx.http.method;
+  if (meth !== 'POST') {
     return {
       statusCode: 405,
       headers: cors
@@ -53,7 +54,7 @@ exports.handler = async evt => {
 };
 
 const checkSig = evt => {
-  const sig = evt.headers && evt.headers['X-Antenny-Sig'];
+  const sig = evt.headers && evt.headers['x-antenny-sig'];
   if (!sig) {
     console.error('No Signature!');
     return false;
@@ -96,13 +97,13 @@ const processMsg = async msg => {
   for (let i = 0; i < evts.length; i++) {
     const evt = evts[i];
     const tradeId = evt.tid;
-    const price = evt.price;
-    const amount = evt.amount;
+    const price = Number(evt.price);
+    const amount = Number(evt.amount);
     const makerSide = evt.makerSide;
     if (!tradeId || !price || !amount || !makerSide) {
       continue;
     }
-    const key = getKey(evt);
+    const key = getKey(msg);
     if (!key) {
       continue;
     }
